@@ -1,7 +1,7 @@
 const express = require('express');
 const dotenv = require('dotenv');
-const cookieParser=require("cookie-parser");
-const path=require('path');
+const cookieParser = require("cookie-parser");
+const path = require('path');
 
 dotenv.config({ path: './DB/config.env' })
 
@@ -15,13 +15,13 @@ const PORT = process.env.PORT || 3000;
 
 //app.get('/',(req,res)=>{ res.send("kfs")})
 app.use('/api', require('./routes/api/users'));
-app.use('/api/profile',require('./routes/api/profile'));
-app.use('/api/post',require('./routes/api/post'));
+app.use('/api/profile', require('./routes/api/profile'));
+app.use('/api/post', require('./routes/api/post'));
 
 if (process.env.NODE_ENV == 'production') {
-    app.use(express.static(path.join(__dirname,'./udensnapSocialMedia/client/build')));
-    app.get('*',(req,res)=>{
-        res.sendFile(path.resolve(__dirname,'./udensnapSocialMedia','client','build','index.html'))
+    app.use(express.static(path.join(__dirname, './client/build')));
+    app.get('*', (req, res) => {
+        res.sendFile(path.resolve(__dirname,'client','build','index.html'));
     })
 }
 
