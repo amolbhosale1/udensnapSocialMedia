@@ -1,0 +1,216 @@
+const express = require('express');
+const router = express.Router();
+const { check, validationResult } = require('express-validator');
+
+
+//const User = require('../models/UserSchema');
+const Profile = require('../../models/ProfileSchema');
+const authenticate = require('../../middleware/auth');
+const User = require('../../models/UserSchema');
+
+// function findONe(params) {
+//     const profile =  Profile.findOne(params);
+//     return profile;
+// }
+
+//create Profile
+router.post('/', authenticate,
+    //check('status', 'Status is Required').notEmpty(),
+    check('skills', "skills Required").notEmpty(),
+    async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).json({ errors: errors.array() });
+        }
+        
+        const {
+            website, skills, youtube, twitter, instagram, linkedin, facebook,
+            company, location, status, bio
+        } = req.body;
+
+        const profileFields = {
+            user: req.rootUser.id,website: website,company,location,status,bio,
+            skills: Array.isArray(skills) ? skills : skills.split(',').map(skill => '' + skill.trim())
+        };
+        user = req.rootUser.id
+        const socialFields = {
+            youtube, twitter, instagram, linkedin, facebook
+        };
+
+        for (const [key, value] of Object.entries(socialFields)) {
+            if (value) {
+                socialFields[key] = value;
+            }
+        }
+
+        profileFields.social = socialFields;
+
+        //console.log(socialFields);
+
+        try {
+            const profile = await Profile.findOneAndUpdate(
+                {
+                    user: req.rootUser.id,
+                }
+                , { $set: profileFields },
+                { new: true, upsert: true }
+            );
+            //console.log(profile);
+            res.send(profile);
+
+            // const profile = new Profile({user,website,skills,status});
+            // await profile.save();
+            // console.log(profile);
+        } catch (err) {
+            console.error(err.message);
+            return res.status(500).send('Server Error');
+        }
+    })
+
+//getOwnProfile
+router.get('/myProfile', authenticate, async (req, res) => {
+
+    try {
+        const profile = await Profile.findOne({ user: req.rootUser.id })
+            .populate('user', ['name', 'avator']);
+     //   console.log(profile);
+
+        if (!profile) {
+            return res.status(404).json({ msg: "No User Found" });
+        }
+        res.send(profile);
+    } catch (err) {
+        res.status(500).send("Server Error");
+    }
+})
+
+//get AllProfile
+router.get('/allProfile', async (req, res) => {
+    try {
+        const profiles = await Profile.find().populate('user', ['name', 'avator']);
+        res.send(profiles);
+    } catch (err) {
+        res.status(500).send("Server Error");
+    }
+})
+
+//get Profile by ID
+router.get('/:profile_ID',
+    async (req, res) => {
+        console.log(req.params)
+        try {
+            const profile = await Profile.findOne({ user: req.params.profile_ID }).populate('user', ['name', 'avatar']);
+
+            if (!profile) {
+                return res.status(400).json({ msg: "Profile Not Found" });
+            }
+
+            res.send(profile);
+        } catch (err) {
+            if (err.kind === 'ObjectId') {
+                return res.status(400).json({ msg: "Profile Not Found" });
+            }
+            res.status(500).send("Server Error");
+        }
+    })
+
+//delete User
+router.delete('/', authenticate, async (req, res) => {
+    try {
+        await Profile.findOneAndDelete({ user: req.rootUser.id });
+        await User.findOneAndDelete({ _id: req.rootUser.id });
+        res.send({msg:"User Deleted"});
+    } catch (err) {
+        res.status(500).send("Server Error");
+    }
+});
+
+// Add Experience (Use put to add values at end)
+router.put('/experiance', authenticate,
+    [check('title', 'Work Tittle is Require').notEmpty(),
+    check('company', 'Add company Name').notEmpty(),
+    check('from', 'From Date is Required').notEmpty()
+    ]
+    , async (req, res) => {
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            return res.status(400).send({ errors: errors.array() });
+        }
+        const {
+            title, company, location, from, to, current, description
+        } = req.body;
+        //const addExp={title, company, location, from, to, current, description};
+        try {
+            const profile = await Profile.findOne({ user: req.rootUser.id });
+            await profile.experiance.unshift({ title, company, location, from, to, current, description });
+            await profile.save();
+            res.send(profile);
+        } catch (err) {
+            console.error(err);
+            res.status(500).send("Server Error")
+        }
+    })
+
+router.delete('/experiance/:experianceID', authenticate, async (req, res) => {
+    const profile = await Profile.findOne({ user: req.rootUser.id });
+    // console.log(profile);
+    //const experianceDelArray=await profile.experiance.filter(val=>val._id.toString()!==req.params.experianceID);
+    try {
+        const removeEleIndex = await profile.experiance.map(val => val.id).indexOf(req.params.experianceID);
+        if (removeEleIndex===(-1)) {
+            return res.status(400).send({msg:"Not Found"});
+        }
+        // post.likes = post.likes.filter(
+        //     ({ user }) => user.toString() !== req.rootUser.id
+        // );
+        await profile.experiance.splice(removeEleIndex, 1);
+        await profile.save();
+      
+        res.send({msg:"Exp Deleted",profile})
+    } catch (err) {
+        res.status(500).send("Server Error");
+    }
+})
+
+//add Education
+router.put('/education',authenticate,async(req,res)=>{
+    const{school,degree,fieldOfStudy,from,to,current,description}=req.body;
+
+    // const profile= await Profile.findOne({user:req.rootUser.id});
+    // await profile.education.unshift({school,degree,fieldOfStudy,from,to,current,description});
+    // await profile.save();
+    // res.send(profile);
+
+
+    //const {school,degree,fieldOfStudy,from,to,current,description}=req.body;
+
+    try {
+      const profile =await Profile.findOne({user:req.rootUser.id});
+      await profile.education.unshift({school,degree,fieldOfStudy,from,to,current,description});
+      await profile.save();
+      res.send(profile);
+    } catch (err) {
+        console.error(err);
+        res.status(500).send("Server Error");
+    }
+})
+
+router.delete('/education/:educationID',authenticate,async(req,res)=>{
+   
+    const profile = await Profile.findOne({user:req.rootUser.id});
+    const removeEleIndex = await profile.education.map(ind=>ind.id).indexOf(req.params.educationID);
+    console.log(removeEleIndex);
+    if (removeEleIndex===(-1)) {
+        return res.status(400).send({msg:"Not Found"});
+    }
+    await profile.education.splice(removeEleIndex,1);
+    await profile.save();
+    res.send({msg:"Exp Deleted",profile}) 
+   
+    try {
+    } catch (error) {
+        res.status(500).send("Server Error")
+    }
+})
+
+module.exports = router;

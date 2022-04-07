@@ -1,0 +1,36 @@
+.main{
+   display: flex;
+   flex-direction: row;
+}
+
+.first{
+    /* background-color: red; */
+    max-width: 20%; 
+}
+.details,.recent{
+    
+    height: 45vh;
+    max-width: 85%;
+}
+.sec{
+    /* background-color: green; */
+    max-width: 26%;
+}
+.search{
+    min-height: 8vh;
+    max-height: 8vh;
+    /* background-color: aqua; */
+}
+
+.center{
+    max-width: 54%; 
+    padding-right: 3%;
+}
+
+.news{
+    min-height: 40vh;
+}
+.follow{
+    min-height: 33vh;
+}
+
