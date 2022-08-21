@@ -1,0 +1,10 @@
+---
+- name: Install Docker And Python
+  hosts: all
+  become: yes
+  # gather_facts: False
+  vars:
+    - ansible_python_interpreter: /usr/bin/python
+  roles:
+    - install_docker_python
+

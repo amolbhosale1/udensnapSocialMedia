@@ -6,6 +6,8 @@
 /.pnp
 .pnp.js
 config.env
+.terraform
+*.tfvars
 
 # testing
 /coverage
@@ -23,3 +25,5 @@ config.env
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+
+get-pip.py

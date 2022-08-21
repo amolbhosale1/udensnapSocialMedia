@@ -1,0 +1,12 @@
+---
+- name: Install Python
+  ansible.builtin.yum:
+    name:
+      - python3
+      - docker
+    update_cache : yes
+
+- name: Install docker python module
+  ansible.builtin.pip:
+    name: 
+      - docker
