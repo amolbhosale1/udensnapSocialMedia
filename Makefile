@@ -10,3 +10,4 @@ build-prod:
 	docker build -t mern-ude-insnap -f Dockerfile .
 run-prod:
 	docker run -p 3000:3000 -e DATABASE='$(mongodb)' -e JWTSEC='this secret for the udemy mern traversy media' mern-ude-insnap
+
