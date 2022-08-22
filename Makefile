@@ -1,3 +1,4 @@
+include Mvar.mk $(mongodb)
 build-dev:
 	docker build -t mern-dev -f Dockerfile.dev .
 run-dev:
@@ -8,4 +9,4 @@ run-dev:
 build-prod:
 	docker build -t mern-ude-insnap -f Dockerfile .
 run-prod:
-	docker run -p 3000:3000 -e DATABASE='mongodb+srv://basic:Amol%40123@basic.35bfx.mongodb.net/udemy?retryWrites=true&w=majority' -e JWTSEC='this secret for the udemy mern traversy media' mern-ude-insnap
+	docker run -p 3000:3000 -e DATABASE='$(mongodb)' -e JWTSEC='this secret for the udemy mern traversy media' mern-ude-insnap
